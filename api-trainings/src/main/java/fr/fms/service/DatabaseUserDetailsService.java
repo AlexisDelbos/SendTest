@@ -5,9 +5,9 @@ import fr.fms.entities.Role;
 import fr.fms.entities.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +17,12 @@ import java.util.stream.Collectors;
 @Service
 public class DatabaseUserDetailsService implements UserDetailsService {
 
-
-    @Autowired
-    private UserRepository userRepository;
-
-
+    private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(DatabaseUserDetailsService.class);
 
+    public DatabaseUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -31,13 +30,21 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("User not found" + email);
+            logger.error("Utilisateur non trouvé avec l'email: {}", email);
+            throw new UsernameNotFoundException("Utilisateur non trouvé: " + email);
         }
-        List<String> roles = user.getRoles().stream().map(Role::getRole).collect(Collectors.toList());
 
-        logger.info("Utilisateur trouvé: {} avec rôles: {}", user.getEmail());
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(Role::getRole)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), roles.stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toList()));
+        logger.info("Utilisateur trouvé: {} avec rôles: {}", user.getEmail(), authorities);
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
     }
-
 }

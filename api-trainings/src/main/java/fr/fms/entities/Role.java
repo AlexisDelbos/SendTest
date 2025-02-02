@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,6 +25,9 @@ public class Role implements Serializable {
     private Long id;
 
     private String role;
+
+    @ManyToMany
+    private List<User> users = new ArrayList<>();
 
 
 }

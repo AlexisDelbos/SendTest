@@ -1,6 +1,5 @@
 package fr.fms.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,44 +22,51 @@ import java.util.stream.Collectors;
 @RestController
 public class SecurityController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final JwtEncoder jwtEncoder;
 
-    @Autowired
-    private JwtEncoder jwtEncoder;
+    public SecurityController(AuthenticationManager authenticationManager, JwtEncoder jwtEncoder) {
+        this.authenticationManager = authenticationManager;
+        this.jwtEncoder = jwtEncoder;
+    }
 
-    // Endpoint du microservice permettant d'authentifier l'utilisateur
-    // L'utilisateur soumet son username et password,
-    // S'il est authentifié, on génère un JWT qui sera renvoyé à l'utilisateur
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> credentials) {
         String email = credentials.get("email");
         String password = credentials.get("password");
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password));
+        try {
+            System.out.println("Tentative de connexion pour l'email: " + email);
 
-        String scope = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
 
-        Instant instant = Instant.now();
+            String scope = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(" "));
 
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
-                .issuedAt(instant)
-                .expiresAt(instant.plus(10, ChronoUnit.MINUTES))
-                .subject(email)
-                .claim("scope", scope)
-                .build();
+            Instant instant = Instant.now();
 
-        JwtEncoderParameters jwtEncoderParameters = JwtEncoderParameters
-                .from(JwsHeader.with(MacAlgorithm.HS512).build(), jwtClaimsSet);
+            JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                    .issuedAt(instant)
+                    .expiresAt(instant.plus(10, ChronoUnit.MINUTES))
+                    .subject(email)
+                    .claim("scope", scope)
+                    .build();
 
-        String jwt = jwtEncoder.encode(jwtEncoderParameters).getTokenValue();
+            JwsHeader jwsHeader = JwsHeader.with(MacAlgorithm.HS256).build();
 
-        return Map.of("access-token", jwt);
+            JwtEncoderParameters jwtEncoderParameters = JwtEncoderParameters.from(jwsHeader, jwtClaimsSet);
+
+            String jwt = jwtEncoder.encode(jwtEncoderParameters).getTokenValue();
+
+            return Map.of("access-token", jwt);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("error", "Invalid email or password");
+        }
     }
-
 
     // Endpoint pour récupérer les infos de l'utilisateur authentifié via son token
     @GetMapping("/infos")

@@ -62,14 +62,6 @@ public class ImplTrainingService implements ITrainingService {
     public Optional<Training> readTraining(Long id) {
         return trainingRepository.findById(id);
     }
-//
-//    @Override
-//    public Optional<User> readUser(String email) {
-//        Optional<User> user = userRepository.findByEmail(email);
-//        List<Role> role = roleRepository.findByUsersId(user.get().getId());
-//        user.get().setRole(role.stream().findFirst().get());
-//        return user;
-//    }
 
     @Override
     public Training updateTraining(Long id, Training traininDetail) {

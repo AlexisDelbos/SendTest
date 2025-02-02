@@ -2,7 +2,6 @@ package fr.fms.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import fr.fms.service.DatabaseUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,43 +12,34 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Autowired
-    private DatabaseUserDetailsService userDetailsService;
+    private final DatabaseUserDetailsService userDetailsService;
+    private final String secretKey = "SECRET_KEYzaopjzajzhaugfhjvkehjgheruiheuibherruihbhrtbuio";
 
-
-//    @Bean
-//    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-//        PasswordEncoder passwordEncoder = passwordEncoder();
-//        return new InMemoryUserDetailsManager(
-//                User.withUsername("aymen").password(passwordEncoder.encode("12345")).authorities("USER").build(),
-//                User.withUsername("elbab@gmail.com").password(passwordEncoder.encode("12345")).authorities("ADMIN").build()
-//        );
-//    }
+    public SecurityConfig(DatabaseUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,36 +49,41 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Désactiver l'authentification basée sur les sessions
-                .csrf(csrf -> csrf.disable()) // Désactiver la protection CSRF
-                .cors(Customizer.withDefaults()) // Configuration CORS par défaut
-                .authorizeHttpRequests(ahr -> ahr.requestMatchers(HttpMethod.POST, "/login/**").permitAll()) // Autoriser les requêtes POST vers /login pour l'authentification
-                .authorizeHttpRequests(ahr -> ahr.anyRequest().authenticated()) // Toutes les autres requêtes nécessitent une authentification
-                .oauth2ResourceServer(ors -> ors.jwt(Customizer.withDefaults())) // Configurer la gestion des tokens JWT
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(ahr -> ahr
+                        .requestMatchers(HttpMethod.POST, "/login/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(ors -> ors.jwt(Customizer.withDefaults())) // Configurer JWT
                 .build();
     }
 
-    @Bean
-    JwtEncoder jwtEncoder() throws IOException, URISyntaxException {
-        Path path = Paths.get(getClass().getClassLoader().getResource("jwt-secret.txt").toURI());
-        String secretKey = Files.readString(path); // Lire la clé secrète pour signer les tokens
-        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey.getBytes()));
+    private CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("https://example.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        return request -> configuration;
     }
 
     @Bean
-    JwtDecoder jwtDecoder() throws IOException, URISyntaxException {
-        Path path = Paths.get(getClass().getClassLoader().getResource("jwt-secret.txt").toURI());
-        String secretKey = Files.readString(path); // Lire la clé secrète pour vérifier les tokens
-        SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "RSA");
-        return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
+    public JwtEncoder jwtEncoder() {
+        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        return new NimbusJwtEncoder(new ImmutableSecret<>(keySpec));
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) {
-        System.out.println("AuthenticationManager est en train d'utiliser UserDetailsServiceImpl !");
-        var daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        return new ProviderManager(daoAuthenticationProvider);
+    public JwtDecoder jwtDecoder() {
+        SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(keySpec).build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(provider);
     }
 }

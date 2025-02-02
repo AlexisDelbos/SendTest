@@ -15,6 +15,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 
@@ -28,6 +29,9 @@ public class ApiTrainingsApplication implements CommandLineRunner {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
     public static void main(String[] args) {
 
         SpringApplication.run(ApiTrainingsApplication.class, args);
@@ -35,8 +39,8 @@ public class ApiTrainingsApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        dataTrainings();
-        dataUsers();
+//        dataTrainings();
+//        dataUsers();
     }
 
 
@@ -66,15 +70,26 @@ public class ApiTrainingsApplication implements CommandLineRunner {
 
     }
 
-
     private void dataUsers() {
-        accountService.saveUser(new User(null, "mohamed", "12345", new ArrayList<>()));
-        accountService.saveUser(new User(null, "aymene", "12345", new ArrayList<>()));
-        accountService.saveRole(new Role(null, "ADMIN"));
-        accountService.saveRole(new Role(null, "USER"));
-        accountService.addRoleToUser("mohamed", "ADMIN");
-        accountService.addRoleToUser("mohamed", "USER");
-        accountService.addRoleToUser("aymene", "USER");
+        String HashPassword = passwordEncoder.encode("12345");
 
+        User user = new User(null, "mohamed@mail.com", HashPassword, new ArrayList<>());
+        User user2 = new User(null, "aymene@mail.com", HashPassword, new ArrayList<>());
+
+        accountService.saveUser(user);
+        accountService.saveUser(user2);
+
+        Role role = new Role(null, "ROLE_USER", null);
+        Role role2 = new Role(null, "ROLE_ADMIN", null);
+        accountService.saveRole(role2);
+        accountService.saveRole(role);
+
+        user.getRoles().add(role);
+        user.getRoles().add(role2);
+        user2.getRoles().add(role);
+
+        accountService.saveUser(user);
+        accountService.saveUser(user2);
     }
+
 }

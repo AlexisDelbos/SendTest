@@ -7,9 +7,7 @@ import fr.fms.entities.User;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,9 +25,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public User saveUser(User user) {
-//        String hashedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-//        user.setPassword(hashedPassword);
-//        log.info("Saving user: " + user);
+
         return userRepository.save(user);
     }
 
