@@ -1,0 +1,51 @@
+<div class="wrapper" *ngIf="!connected else deconnect">
+    <div class="bg-orange"></div>
+    <div>
+        <button class="btn" (click)="goToHome()">
+            &lt; Retour
+        </button>
+          
+        
+        <div class="flex">
+            <div style="width: 65%;">
+                <h1><strong>Se connecter</strong></h1>
+                <br>
+                <br>
+                <br>
+                <form [formGroup]="myForm" (ngSubmit)="onLogin(myForm)">
+                    <div class="form-group">
+                        <label class="control-label">email : </label>
+                        <input type="text" formControlName="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">mot de passe : </label>
+                        <input type="password" formControlName="password" class="form-control">
+                    </div>
+                    <div class="text-danger"> {{error}}</div>
+                    <button style=margin-top:10px; type="submit" class="btn bg-orange c-white">Connexion</button>
+                    
+                </form>
+            </div>
+            <!-- <div *ngIf="this.authService.isAdmin()">
+                <div class="card-footer text-center">
+                    <button class="btn btn-secondary" (click)="onAddUser()"> Nouveau Client </button>
+                </div>
+            </div> -->
+        </div>
+    </div>
+</div>
+<ng-template #deconnect>
+    <div class="container">
+        <h1 class="text-center my-4">Déconnexion</h1>
+        <div class="text-center">
+        <label class="text-center">Utilisateur :
+            {{this.authService.getUser().email}}</label>
+        </div>
+        <div class="text-center">
+            <a class="btn btn-primary mb-3" (click)="disconnect()"> Se Deconnecter </a>
+            <p class="info-message text-muted">Vous serez redirigés vers la page d'accueil aprés la déconnexion</p>
+        </div>
+
+    </div>
+    
+</ng-template>

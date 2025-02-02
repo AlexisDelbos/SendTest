@@ -1,0 +1,27 @@
+form{
+    line-height: 3em;
+}
+.bg-orange{
+    background-color: #ff8b4f;
+}
+.c-white{
+    color: white;
+}
+
+form input, form select{
+    border: 1px solid #ff8b4f;
+    background-color: #fae5db;
+}
+
+form {
+    background-color: rgb(217, 231, 240);
+    padding: 10px 20px;
+    margin: 20px 0;
+    box-shadow: 3px 3px 3px 3px rgb(0, 0, 0);
+}
+
+#id{
+    background-color: rgb(79, 65, 65);
+    color: linen;
+    border: 1px solid #000000;
+}

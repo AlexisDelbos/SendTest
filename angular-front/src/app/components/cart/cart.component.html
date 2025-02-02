@@ -1,0 +1,32 @@
+
+<div class="container">
+  <ng-container *ngIf="!empty_cart else display_empty_cart">
+    <h2 class="text-center">Mon panier</h2>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Quantity</th><th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let training of cart">
+              <td>{{training.id}}</td>
+              <td>{{training.name}}</td>
+              <td>{{training.quantity}}</td>
+              <td>{{training.price}}</td>  
+              <td class="col-sm-1"> <a class="btn btn-outline-danger btn-sm" (click)="onRemoveFromCart(training)"> Supprimer </a> </td>
+            </tr>
+
+            <tr>
+              <td colspan="3">Total</td>
+              <td>{{amount}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-success" (click)="onNewOrder()">Commander</button>    
+        <div class="text-danger"> {{error}}</div>
+  </ng-container>
+  <ng-template #display_empty_cart>
+    <div> PANIER VIDE </div>
+  </ng-template>
+</div>

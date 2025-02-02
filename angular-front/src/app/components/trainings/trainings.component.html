@@ -1,0 +1,63 @@
+<div class="container">
+  <div class="filters mt-5 d-flex justify-content-center">
+    <button
+      *ngFor="let category of listCategories"
+      class="filter-btn"
+      (click)="filterByCategory(category.id)"
+    >
+      {{ category.name }}
+    </button>
+    <button class="filter-btn all-categories" (click)="resetFilter()">
+      Toutes les catégories
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Prix</th>
+          <th>Quantité</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let training of filteredTrainings">
+          <td>{{ training.name }}</td>
+          <td>{{ training.description }}</td>
+          <td>{{ training.price }}€</td>
+          <td>
+            <input
+              type="number"
+              [(ngModel)]="training.quantity"
+              min="1"
+              max="10"
+              class="quantity-input"
+            />
+          </td>
+          <td class="actions">
+            <button class="btn btn-primary" (click)="onAddToCart(training)">
+              🛒Ajouter au Panier
+            </button>
+            <button
+              class="btn btn-danger"
+              *ngIf="this.authService.isAdmin()"
+              (click)="onDeleteTraining(training)"
+            >
+              🗑 Supprimer
+            </button>
+            <button
+              class="btn btn-secondary"
+              *ngIf="this.authService.isAdmin()"
+              (click)="onUpdateTraining(training)"
+            >
+              ✏️ Modifier
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+{
+  "trainings": [
+    {
+      "id": 4,
+      "name": "PhpXXX",
+      "description": "Initiation au Dev/Web avec hp 4 jours",
+      "price": "1500",
+      "quantity": 1
+    },
+    {
+      "id": 5,
+      "name": "NodeJs",
+      "description": "Prise en main de NodeJs/Express 2 jours",
+      "price": 1400,
+      "quantity": 1
+    },
+    {
+      "id": 10,
+      "name": "Python",
+      "description": "Formation Python/Django 10 jours",
+      "price": "1500",
+      "quantity": 1
+    },
+    {
+      "name": "Java",
+      "description": "Java Standard Edition 8 sur 5 jours",
+      "price": "3500",
+      "quantity": 1,
+      "id": 11
+    },
+    {
+      "id": 12,
+      "name": "DotNet",
+      "description": "DotNet & entityframework en 5 jours",
+      "price": "2750",
+      "quantity": 1
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "email": "elbab@gmail.com",
+      "password": "1234",
+      "roles": [
+        "ADMIN",
+        "USER"
+      ]
+    },
+    {
+      "id": 2,
+      "email": "hugo@gmail.com",
+      "password": "1234",
+      "roles": [
+        "USER"
+      ]
+    },
+    {
+      "email": "toto@gmail.com",
+      "password": "1234",
+      "roles": [
+        "USER"
+      ],
+      "id": 3
+    },    
+    {
+      "id": 8,
+      "email": "nat@gmail.com",
+      "password": "123456",
+      "roles": [
+        "USER"
+      ]
+    }
+  ]
+}

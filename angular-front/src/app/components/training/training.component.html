@@ -1,0 +1,56 @@
+<div class="container">
+  <div>
+    <div style="display: flex;justify-content: center;">
+      <form [formGroup]="myForm" (ngSubmit)="onAddTraining(myForm)" style="width: 50%;">
+        <h2 class="text-center" *ngIf="!status">Ajout d'une formation</h2>
+        <h2 class="text-center" *ngIf="status">Modification d'une formation</h2>
+        <div *ngIf="myForm.value.id" class="form-group">
+          <label class="control-label">Id : </label>
+          <input id="id"
+            type="text"
+            formControlName="id"
+            class="form-control"
+            readonly
+          />
+        </div>
+        <div class="form-group">
+          <label class="control-label">Nom de la formation : </label>
+          <input type="text" formControlName="name" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label class="control-label">Description : </label>
+          <input
+            type="text"
+            formControlName="description"
+            class="form-control"
+          />
+        </div>
+        <div class="form-group">
+          <label class="control-label">Prix : </label>
+          <input type="number" formControlName="price" min="0" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label class="control-label">Categorie : </label>
+          <select formControlName="category" class="form-select">
+            <option value="" disabled selected>
+              Sélectionnez une catégorie
+            </option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="this.authService.isAdmin()">
+          <button *ngIf="!status" type="submit" class="btn bg-orange c-white">
+            Ajouter en Base
+          </button>
+          <button *ngIf="status" type="submit" class="btn bg-orange c-white">
+            Mise à jour
+          </button>
+          <div class="text-danger">{{ error }}</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
